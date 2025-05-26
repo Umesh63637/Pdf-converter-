@@ -93,31 +93,31 @@
 
   <main class="tools" role="main">
     <div class="tool" tabindex="0" role="button" aria-label="Open PDF to Word converter" onclick="toolAction('PDF to Word')">
-      <img src="https://img.icons8.com/ios-filled/100/0000FF/pdf-2.png" alt="PDF to Word Icon" />
+      <img src="https://img.icons8.com/ios-filled/100/0000FF/pdf-2.png" alt="PDF to Word Icon" loading="lazy" />
       <h2>PDF to Word</h2>
       <p>Convert PDF into editable Word docs instantly.</p>
     </div>
 
     <div class="tool" tabindex="0" role="button" aria-label="Open Word to PDF converter" onclick="toolAction('Word to PDF')">
-      <img src="https://img.icons8.com/ios-filled/100/0000FF/ms-word.png" alt="Word to PDF Icon" />
+      <img src="https://img.icons8.com/ios-filled/100/0000FF/ms-word.png" alt="Word to PDF Icon" loading="lazy" />
       <h2>Word to PDF</h2>
       <p>Turn Word documents into secure PDFs.</p>
     </div>
 
     <div class="tool" tabindex="0" role="button" aria-label="Open Merge PDFs tool" onclick="toolAction('Merge PDFs')">
-      <img src="https://img.icons8.com/ios-filled/100/0000FF/pdf-doc.png" alt="Merge PDFs Icon" />
+      <img src="https://img.icons8.com/ios-filled/100/0000FF/pdf-doc.png" alt="Merge PDFs Icon" loading="lazy" />
       <h2>Merge PDFs</h2>
       <p>Combine multiple PDFs into one smooth file.</p>
     </div>
 
     <div class="tool" tabindex="0" role="button" aria-label="Open Compress PDF tool" onclick="toolAction('Compress PDF')">
-      <img src="https://img.icons8.com/ios-filled/100/0000FF/compress.png" alt="Compress PDF Icon" />
+      <img src="https://img.icons8.com/ios-filled/100/0000FF/compress.png" alt="Compress PDF Icon" loading="lazy" />
       <h2>Compress PDF</h2>
       <p>Shrink PDF size without losing quality.</p>
     </div>
 
     <div class="tool" tabindex="0" role="button" aria-label="Open Image to PDF converter" onclick="toolAction('Image to PDF')">
-      <img src="https://img.icons8.com/ios-filled/100/0000FF/image.png" alt="Image to PDF Icon" />
+      <img src="https://img.icons8.com/ios-filled/100/0000FF/image.png" alt="Image to PDF Icon" loading="lazy" />
       <h2>Image to PDF</h2>
       <p>Convert images (JPG, PNG) into PDF files easily.</p>
     </div>
@@ -129,9 +129,18 @@
   </footer>
 
 <script>
+  // Keyboard support for tool activation (Enter or Space)
+  document.querySelectorAll('.tool').forEach(tool => {
+    tool.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        tool.click();
+      }
+    });
+  });
+
   // Simple smooth alert with fade
   function toolAction(toolName) {
-    // Create notification div
     const notif = document.createElement('div');
     notif.textContent = `${toolName} Tool Loading...`;
     notif.style.position = 'fixed';
@@ -150,12 +159,10 @@
 
     document.body.appendChild(notif);
 
-    // Fade in
     requestAnimationFrame(() => {
       notif.style.opacity = '1';
     });
 
-    // Fade out after 2 seconds
     setTimeout(() => {
       notif.style.opacity = '0';
       notif.addEventListener('transitionend', () => {

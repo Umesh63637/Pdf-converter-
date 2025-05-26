@@ -1,6 +1,6 @@
-import express from "express";
-import cors from "cors";
-import multer from "multer";
+const express = require("express");
+const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
 const port = 4000;
@@ -10,99 +10,79 @@ app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Simple AI summary function: truncate to 100 chars
+// Simple text summary function
 function summarize(text) {
   return text.length > 100 ? text.slice(0, 100) + "..." : text;
 }
 
-// Serve simple frontend HTML
+// Serve frontend HTML
 app.get("/", (req, res) => {
   res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head><meta charset="UTF-8" /><title>AI PDF Converter</title></head>
-    <body>
-      <h1>AI PDF Converter Simple Demo</h1>
-      
-      <h3>Text Summarizer</h3>
-      <textarea id="inputText" rows="6" cols="50" placeholder="Paste text to summarize"></textarea><br/>
-      <button onclick="summarizeText()">Summarize</button>
-      <p><b>Summary:</b> <span id="summary"></span></p>
+  <!DOCTYPE html>
+  <html>
+  <head><title>Simple Text Summarizer & Upload</title></head>
+  <body>
+    <h1>Simple Text Summarizer & File Upload</h1>
 
-      <h3>File Upload</h3>
-      <input type="file" id="fileInput" multiple />
-      <button onclick="uploadFiles()">Upload Files</button>
-      <ul id="fileList"></ul>
+    <h3>Summarize Text</h3>
+    <textarea id="inputText" rows="6" cols="50"></textarea><br/>
+    <button onclick="summarizeText()">Summarize</button>
+    <p><b>Summary:</b> <span id="summary"></span></p>
 
-      <script>
-        async function summarizeText() {
-          const text = document.getElementById('inputText').value;
-          if (!text.trim()) {
-            alert('Enter text to summarize');
-            return;
-          }
-          document.getElementById('summary').textContent = 'Loading...';
-          try {
-            const res = await fetch('/api/ai/summarize', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text })
-            });
-            const data = await res.json();
-            document.getElementById('summary').textContent = data.summary || 'No summary returned';
-          } catch {
-            document.getElementById('summary').textContent = 'Error calling API';
-          }
+    <h3>Upload File</h3>
+    <input type="file" id="fileInput" />
+    <button onclick="uploadFile()">Upload</button>
+    <p id="uploadStatus"></p>
+
+    <script>
+      async function summarizeText() {
+        const text = document.getElementById('inputText').value;
+        if (!text.trim()) {
+          alert('Please enter text to summarize.');
+          return;
         }
+        const response = await fetch('/api/summarize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+        document.getElementById('summary').textContent = data.summary;
+      }
 
-        async function uploadFiles() {
-          const input = document.getElementById('fileInput');
-          const files = input.files;
-          if (files.length === 0) {
-            alert('Select files to upload');
-            return;
-          }
-          const list = document.getElementById('fileList');
-          list.innerHTML = '';
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-              const res = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-              });
-              const data = await res.json();
-              const li = document.createElement('li');
-              li.textContent = data.message + ' (' + data.filename + ')';
-              list.appendChild(li);
-            } catch {
-              const li = document.createElement('li');
-              li.textContent = 'Upload failed: ' + file.name;
-              list.appendChild(li);
-            }
-          }
+      async function uploadFile() {
+        const input = document.getElementById('fileInput');
+        if (input.files.length === 0) {
+          alert('Please select a file to upload.');
+          return;
         }
-      </script>
-    </body>
-    </html>
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        document.getElementById('uploadStatus').textContent = data.message + ' (' + data.filename + ')';
+      }
+    </script>
+  </body>
+  </html>
   `);
 });
 
-// API endpoint to summarize text
-app.post("/api/ai/summarize", (req, res) => {
+// Summarize API
+app.post("/api/summarize", (req, res) => {
   const { text } = req.body;
-  if (!text) return res.status(400).json({ error: "Missing text input" });
-
+  if (!text) return res.status(400).json({ error: "No text provided" });
   const summary = summarize(text);
   res.json({ summary });
 });
 
-// API endpoint to upload a single file
-app.post("/upload", upload.single("file"), (req, res) => {
+// Upload API
+app.post("/upload", upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  res.json({ message: "File received", filename: req.file.originalname });
+  res.json({ message: "File uploaded successfully", filename: req.file.originalname });
 });
 
 app.listen(port, () => {
